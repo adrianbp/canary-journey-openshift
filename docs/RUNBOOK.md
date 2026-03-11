@@ -10,8 +10,11 @@ Executar canary com o menor número de passos, mantendo segurança e governança
 
 ## Responsabilidades
 - Pipeline: `ENABLE` e `DISABLE`
-- Painel de governança: `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`
+- `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`: **owner TBD** (definir entre governança/plataforma/time de app)
 - Ambos: sempre esperar gate (`wait-canaryrollout.sh`)
+
+Política temporária para piloto DEV:
+- até decisão final, executar `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK` por um grupo central (governança/plataforma).
 
 ## Pré-check rápido
 ```bash
@@ -32,7 +35,7 @@ oc -n "$NS" patch canaryrollout "$APP" --type=merge -p \
 infra/openshift/canaryrollout/controller/wait-canaryrollout.sh "$NS" "$APP" 900 10
 ```
 
-### 2) ADVANCE_STEP (governança)
+### 2) ADVANCE_STEP (owner TBD)
 ```bash
 oc -n "$NS" patch canaryrollout "$APP" --type=merge -p \
 '{"spec":{"action":"ADVANCE_STEP","stepName":"step-25","approval":{"required":true,"state":"APPROVED"}}}'
@@ -40,7 +43,7 @@ oc -n "$NS" patch canaryrollout "$APP" --type=merge -p \
 infra/openshift/canaryrollout/controller/wait-canaryrollout.sh "$NS" "$APP" 900 10
 ```
 
-### 3) PROMOTE (governança)
+### 3) PROMOTE (owner TBD)
 ```bash
 oc -n "$NS" patch canaryrollout "$APP" --type=merge -p \
 '{"spec":{"action":"PROMOTE","approval":{"required":true,"state":"APPROVED"}}}'
@@ -48,7 +51,7 @@ oc -n "$NS" patch canaryrollout "$APP" --type=merge -p \
 infra/openshift/canaryrollout/controller/wait-canaryrollout.sh "$NS" "$APP" 900 10
 ```
 
-### 4) ROLLBACK (governança)
+### 4) ROLLBACK (owner TBD)
 ```bash
 oc -n "$NS" patch canaryrollout "$APP" --type=merge -p \
 '{"spec":{"action":"ROLLBACK","approval":{"required":true,"state":"APPROVED"}}}'
@@ -88,5 +91,5 @@ oc -n "$NS" logs deploy/canaryrollout-controller --tail=100
 ## Padrão recomendado para empresa
 - Helm garante objeto base
 - Pipeline só `ENABLE`/`DISABLE`
-- Governança decide progressão e promoção
+- Ownership de progressão/promoção/rollback definido por política de mudança (TBD no momento)
 - Gate obrigatório em todas as ações

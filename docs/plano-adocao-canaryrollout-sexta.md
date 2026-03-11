@@ -9,6 +9,9 @@ Validar em `DEV` a estratégia de canary com `CanaryRollout` (OpenShift Route + 
 - Controle: controller MVP executa ações (`ENABLE`, `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`, `DISABLE`).
 - Governança: gate de pipeline aguardando `status.phase=Succeeded`.
 
+Decisão pendente:
+- ownership de `ADVANCE_STEP`/`PROMOTE`/`ROLLBACK` está **TBD** (governança central vs times de app).
+
 ## Escopo da fase DEV
 1. Instalar CRD e controller no cluster DEV.
 2. Selecionar 1 serviço piloto (`payments-api` ou equivalente).
@@ -52,8 +55,9 @@ Validar em `DEV` a estratégia de canary com `CanaryRollout` (OpenShift Route + 
 
 ## RACI simplificado
 - Plataforma/SRE: operar controller, RBAC, observabilidade.
-- Times de aplicação: manter planos por app/env e aprovações.
-- Release management: autorizar steps críticos (`PROMOTE`/`DISABLE`).
+- Times de aplicação: manter planos por app/env.
+- Release management: autorizar ações críticas conforme política.
+- Owner de `ADVANCE_STEP`/`PROMOTE`/`ROLLBACK`: TBD (definir na reunião).
 
 ## Riscos e mitigação
 - Drift de objetos (`-primary`) vs Helm:
@@ -75,6 +79,7 @@ Validar em `DEV` a estratégia de canary com `CanaryRollout` (OpenShift Route + 
 3. Discussão de governança:
 - quem aprova cada ação
 - critérios para `PROMOTE` e `ROLLBACK`
+ - decisão de ownership dos steps (`ADVANCE_STEP`/`PROMOTE`/`ROLLBACK`)
 4. Decisão de piloto:
 - app inicial
 - janela de teste

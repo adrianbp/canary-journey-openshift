@@ -10,7 +10,13 @@ Fluxo recomendado:
 2. Helm aplica/atualiza ConfigMap `<app>-rollout-plan`.
 3. Controller lê o ConfigMap para executar `ADVANCE_STEP`/`ROLLBACK`.
 
-## O que o dev precisa fazer no dia a dia
+## Decisão pendente (importante)
+O ownership de `ADVANCE_STEP`/`PROMOTE`/`ROLLBACK` ainda está **TBD**.
+Até essa decisão, este playbook cobre principalmente:
+- manutenção do plano (`rollout-steps.yaml`)
+- validação técnica do plano antes de merge
+
+## O que o dev pode fazer no dia a dia (se aplicável pela política)
 1. Manter plano de rollout por app/ambiente (`dev/stg/prod`).
 2. Garantir que os nomes do plano batem com o app real:
 - `appName`
@@ -33,9 +39,9 @@ Fluxo recomendado:
 - `minCanaryReplicas` e `safetyExtraReplicas` condizem com risco do serviço.
 - Não alterou nomes base (`<app>` e `<app>-primary`) sem alinhar plataforma.
 
-## Ações que ficam fora do escopo do dev
+## Ações que podem ficar fora do escopo do dev (conforme decisão final)
 - `ENABLE`/`DISABLE` de canary no pipeline.
-- Governança de aprovação (`PROMOTE`, `ROLLBACK`, gates formais).
+- Operação de aprovação/execução (`ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`, gates formais), caso a política fique centralizada.
 - Operação do controller/RBAC.
 
 ## Comandos úteis

@@ -137,7 +137,7 @@ pipeline {
 1. Atualiza CR com `spec.action=ENABLE` e aprovação.
 2. Aguarda gate (`wait-canaryrollout.sh`).
 3. Executa deploy da nova versão.
-4. Atualiza CR para steps/promoção (`ADVANCE_STEP`/`PROMOTE`) com gates entre etapas.
+4. Atualiza CR para steps/promoção (`ADVANCE_STEP`/`PROMOTE`) com gates entre etapas (owner TBD).
 5. Quando necessário, atualiza CR para `DISABLE` e aguarda gate.
 
 ## Observação importante
