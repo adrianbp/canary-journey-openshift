@@ -6,11 +6,9 @@ canary:
   enabled: true
   provider: route
 
-primary:
-  enabled: true
+stable:
   deploymentName: payments-api-primary
   serviceName: payments-api-primary
-  replicas: 4
 
 traffic:
   route:

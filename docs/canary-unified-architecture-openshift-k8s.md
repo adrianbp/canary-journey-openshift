@@ -16,6 +16,10 @@ Keep one **control flow** and swap only the **traffic adapter**:
 - OpenShift adapter -> Route weights
 - Kubernetes adapter -> Ingress canary controls
 
+For PoC A ownership:
+- Helm does not manage `<app>-primary` resources.
+- Rollout scripts/executor own `<app>-primary` create/update/remove lifecycle.
+
 ## Unified Component Model
 ```mermaid
 flowchart LR
@@ -147,7 +151,7 @@ Suggested storage:
 
 ## Risks and Mitigations
 - Drift between Helm and runtime objects:
-  - Mitigation: keep canary extra objects in Helm add-on chart.
+  - Mitigation: strict ownership boundary (Helm = config only, scripts/executor = transient canary runtime objects).
 - Misconfigured weights per app:
   - Mitigation: plan validation (`weights sum = 100`).
 - No autoscaling in cluster:

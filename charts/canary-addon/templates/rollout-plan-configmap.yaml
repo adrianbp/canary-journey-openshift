@@ -14,9 +14,9 @@ data:
       name: {{ .Values.app.name }}-plan
     spec:
       appName: {{ .Values.app.name }}
-      stableDeployment: {{ .Values.primary.deploymentName }}
+      stableDeployment: {{ .Values.stable.deploymentName }}
       canaryDeployment: {{ .Values.app.name }}
-      stableService: {{ .Values.primary.serviceName }}
+      stableService: {{ .Values.stable.serviceName }}
       canaryService: {{ .Values.app.name }}
       routeName: {{ .Values.app.name }}
       namespace: {{ .Values.app.namespace }}

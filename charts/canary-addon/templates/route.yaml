@@ -10,7 +10,7 @@ spec:
   host: {{ .Values.traffic.route.host | quote }}
   to:
     kind: Service
-    name: {{ .Values.primary.serviceName }}
+    name: {{ .Values.stable.serviceName }}
     weight: 100
   alternateBackends:
     - kind: Service

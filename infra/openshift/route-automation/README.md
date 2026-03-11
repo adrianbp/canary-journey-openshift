@@ -16,6 +16,10 @@ The script supports dynamic replica calculation from the current stable deployme
 - `minCanaryReplicas` at plan level
 - `safetyExtraReplicas` at plan level
 
+## Ownership Model
+- Helm: must not create/manage `<app>-primary` deployment/service for this PoC.
+- `oc` scripts in this folder: own `-primary` bootstrap, promotion sync, rollback, disable, and route weight changes.
+
 ## Files
 - `plans/<app>/<env>/rollout-steps.yaml`: per-deployment per-environment rollout plans
 - `validate-plan.sh`: validates required fields and weight consistency per step
@@ -34,7 +38,8 @@ The script supports dynamic replica calculation from the current stable deployme
 ## Prerequisites
 - `oc` logged in and pointed to your OpenShift cluster
 - Existing Route with stable service as main backend
-- Existing stable/canary deployments and services
+- Existing app deployment/service (`<app>`) as baseline
+- `bootstrap-primary.sh` will create `<app>-primary` deployment/service when canary mode is enabled
 
 ## Usage
 ```bash
