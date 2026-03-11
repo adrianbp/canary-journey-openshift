@@ -78,3 +78,4 @@ Default image target:
 - This MVP is shell-based and intended to validate reconciliation behavior quickly.
 - For production, replace with a proper Operator/Controller runtime (Go + controller-runtime) and leader election.
 - Use `docs/quickstart-openshift-canaryrollout.md` for full end-to-end validation flow.
+- Use `infra/openshift/canaryrollout/controller/wait-canaryrollout.sh` as pipeline gate helper.

@@ -18,6 +18,7 @@ The controller MVP in this branch already reconciles this object and executes th
 - `controller/controller.sh`: Phase 2 MVP reconciler (`ENABLE`, `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`, `DISABLE`)
 - `controller/Dockerfile`: container image definition for in-cluster execution
 - `controller/build-image.sh`: local helper to build image
+- `controller/wait-canaryrollout.sh`: pipeline gate helper (wait for `Succeeded`/`Failed`)
 - `controller/rbac.yaml`: minimal RBAC for the controller
 - `controller/deployment.yaml`: sample in-cluster deployment
 - `controller/README.md`: operation guide for controller MVP
@@ -55,3 +56,4 @@ oc get canaryrollout payments-api -n team-a -o yaml
 - Manual gates should set `spec.approval.state=APPROVED` before reconciliation executes state-changing actions.
 - Phase 2 MVP controller emits OpenShift `Event` objects for audit visibility.
 - End-to-end validation guide: `docs/quickstart-openshift-canaryrollout.md`.
+- Pipeline snippets guide: `docs/canaryrollout-pipeline-gates.md`.

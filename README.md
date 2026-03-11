@@ -30,6 +30,8 @@ GitHub Actions workflow is included to enforce execution order:
 - Examples: `infra/openshift/canaryrollout/examples/`
 - Design doc: `docs/openshift-canaryrollout-crd-phase1.md`
 - Quickstart E2E: `docs/quickstart-openshift-canaryrollout.md`
+- Pipeline gates snippets: `docs/canaryrollout-pipeline-gates.md`
+- Adoption plan for Friday presentation: `docs/plano-adocao-canaryrollout-sexta.md`
 - Controller MVP (Phase 2): `infra/openshift/canaryrollout/controller/controller.sh`
 - Controller in-cluster manifest: `infra/openshift/canaryrollout/controller/deployment.yaml`
 - Controller image build workflow: `.github/workflows/build-canaryrollout-controller-image.yml`
