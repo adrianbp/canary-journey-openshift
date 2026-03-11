@@ -1,0 +1,27 @@
+{{- if and .Values.canary.enabled .Values.rolloutPlan.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.app.name }}-rollout-plan
+  namespace: {{ .Values.app.namespace }}
+  labels:
+{{ include "canary-addon.labels" . | indent 4 }}
+data:
+  rollout-steps.yaml: |
+    apiVersion: canary.company.io/v1alpha1
+    kind: RouteRolloutPlan
+    metadata:
+      name: {{ .Values.app.name }}-plan
+    spec:
+      appName: {{ .Values.app.name }}
+      stableDeployment: {{ .Values.primary.deploymentName }}
+      canaryDeployment: {{ .Values.app.name }}
+      stableService: {{ .Values.primary.serviceName }}
+      canaryService: {{ .Values.app.name }}
+      routeName: {{ .Values.app.name }}
+      namespace: {{ .Values.app.namespace }}
+      minCanaryReplicas: {{ .Values.rolloutPlan.minCanaryReplicas }}
+      safetyExtraReplicas: {{ .Values.rolloutPlan.safetyExtraReplicas }}
+      steps:
+{{ toYaml .Values.rolloutPlan.steps | indent 8 }}
+{{- end }}

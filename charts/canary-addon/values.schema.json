@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["app", "canary", "primary", "traffic", "rolloutPlan"],
+  "properties": {
+    "app": {
+      "type": "object",
+      "required": ["name", "namespace"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "namespace": { "type": "string", "minLength": 1 }
+      }
+    },
+    "canary": {
+      "type": "object",
+      "required": ["enabled", "provider"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "provider": { "type": "string", "enum": ["route", "ingress"] }
+      }
+    },
+    "primary": {
+      "type": "object",
+      "required": ["enabled", "deploymentName", "serviceName", "replicas"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "deploymentName": { "type": "string", "minLength": 1 },
+        "serviceName": { "type": "string", "minLength": 1 },
+        "replicas": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "rolloutPlan": {
+      "type": "object",
+      "required": ["enabled", "steps"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "canaryWeight", "stableWeight", "canaryReplicas"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "canaryWeight": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "stableWeight": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "canaryReplicas": {
+                "oneOf": [
+                  { "type": "string", "enum": ["auto"] },
+                  { "type": "integer", "minimum": 0 }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

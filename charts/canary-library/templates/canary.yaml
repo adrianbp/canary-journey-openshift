@@ -1,0 +1,43 @@
+{{- if .Values.canary.enabled }}
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: {{ .Values.serviceName }}
+  namespace: {{ .Values.namespace }}
+spec:
+  provider: nginx
+  suspend: {{ .Values.canary.suspend }}
+  skipAnalysis: {{ .Values.canary.skipAnalysis }}
+  revertOnDeletion: {{ .Values.canary.revertOnDeletion }}
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.serviceName }}
+  service:
+    port: {{ .Values.servicePort }}
+    targetPort: {{ .Values.targetPort }}
+  analysis:
+    interval: {{ .Values.analysis.interval }}
+    threshold: {{ .Values.analysis.threshold }}
+    stepWeight: {{ .Values.analysis.stepWeight }}
+    maxWeight: {{ .Values.analysis.maxWeight }}
+    webhooks:
+      {{- if .Values.smoke.enabled }}
+      - name: smoke-precheck
+        type: pre-rollout
+        url: {{ .Values.smoke.url | quote }}
+        timeout: 20s
+      {{- end }}
+      - name: approve-next-step
+        type: confirm-traffic-increase
+        url: {{ .Values.manualGate.url | quote }}
+        timeout: 15s
+      - name: approve-rollback
+        type: rollback
+        url: {{ .Values.manualRollback.url | quote }}
+        timeout: 15s
+      - name: approve-promotion
+        type: confirm-promotion
+        url: {{ .Values.manualGate.url | quote }}
+        timeout: 15s
+{{- end }}

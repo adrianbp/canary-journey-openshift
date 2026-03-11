@@ -1,0 +1,10 @@
+namespace: canary-system
+
+approvalApi:
+  image: ghcr.io/company/approval-api:latest
+  port: 8081
+
+manualGateWebhook:
+  image: ghcr.io/company/manual-gate-webhook:latest
+  port: 8082
+  approvalApiBaseUrl: http://approval-api.canary-system.svc.cluster.local:8081

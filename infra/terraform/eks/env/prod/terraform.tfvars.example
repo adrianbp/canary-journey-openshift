@@ -1,0 +1,26 @@
+aws_region      = "us-west-2"
+cluster_name    = "canary-eks-prod"
+cluster_version = "1.30"
+
+vpc_cidr        = "10.92.0.0/16"
+private_subnets = ["10.92.1.0/24", "10.92.2.0/24", "10.92.3.0/24"]
+public_subnets  = ["10.92.101.0/24", "10.92.102.0/24", "10.92.103.0/24"]
+
+enable_nat_gateway = true
+single_nat_gateway = false
+
+node_instance_types = ["m5.2xlarge"]
+node_min_size       = 4
+node_max_size       = 12
+node_desired_size   = 6
+
+observability_namespace = "canary-observability"
+service_account_name    = "canary-status-reader"
+deploy_status_api       = true
+status_api_image        = "ghcr.io/company/canary-status-api:latest"
+status_api_replicas     = 3
+
+tags = {
+  environment = "prod"
+  owner       = "platform-team"
+}

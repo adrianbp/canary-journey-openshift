@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manual-gate-webhook
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: manual-gate-webhook
+  template:
+    metadata:
+      labels:
+        app: manual-gate-webhook
+    spec:
+      containers:
+        - name: manual-gate-webhook
+          image: {{ .Values.manualGateWebhook.image }}
+          ports:
+            - containerPort: {{ .Values.manualGateWebhook.port }}
+          env:
+            - name: APPROVAL_API_BASE_URL
+              value: {{ .Values.manualGateWebhook.approvalApiBaseUrl | quote }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: manual-gate-webhook
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: manual-gate-webhook
+  ports:
+    - port: {{ .Values.manualGateWebhook.port }}
+      targetPort: {{ .Values.manualGateWebhook.port }}

@@ -1,0 +1,48 @@
+app:
+  name: payments-api
+  namespace: team-a
+
+canary:
+  enabled: true
+  provider: route
+
+primary:
+  enabled: true
+  deploymentName: payments-api-primary
+  serviceName: payments-api-primary
+  replicas: 4
+
+traffic:
+  route:
+    enabled: true
+    host: payments.apps.stg.example.com
+  ingress:
+    enabled: false
+    className: nginx
+    host: ""
+
+rolloutPlan:
+  enabled: true
+  minCanaryReplicas: 1
+  safetyExtraReplicas: 1
+  steps:
+    - name: step-00-preview
+      canaryWeight: 0
+      stableWeight: 100
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-5
+      canaryWeight: 5
+      stableWeight: 95
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-20
+      canaryWeight: 20
+      stableWeight: 80
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-100-canary
+      canaryWeight: 100
+      stableWeight: 0
+      canaryReplicas: auto
+      approvalRequired: true

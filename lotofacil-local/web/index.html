@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fechamentos de Loterias</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Fechamentos: Lotofácil e Mega-Sena</h1>
+      <p class="subtitle">
+        Consulta resultados recentes da Caixa, calcula métricas percentis, sugere dezenas
+        base e gera os jogos para exportar em Excel.
+      </p>
+
+      <section class="controls">
+        <label>
+          Loteria
+          <select id="lottery"></select>
+        </label>
+        <label>
+          Modelo de fechamento
+          <select id="preset"></select>
+        </label>
+        <label>
+          Histórico de concursos
+          <input id="history" type="number" min="30" value="120" />
+        </label>
+        <label>
+          Preço por jogo (R$)
+          <input id="unitPrice" type="number" min="0.01" step="0.01" value="6.00" />
+        </label>
+        <label>
+          Orçamento mensal (R$)
+          <input id="budget" type="number" min="0" step="0.01" value="60.00" />
+        </label>
+        <label>
+          Fator de variação (%)
+          <input id="variation" type="number" min="0" max="100" step="5" value="0" />
+        </label>
+        <button id="generateBtn">Gerar estratégia</button>
+      </section>
+
+      <section id="status"></section>
+
+      <section id="result" class="hidden">
+        <h2 id="baseTitle">Números base</h2>
+        <div id="baseNumbers" class="chips"></div>
+
+        <div class="meta">
+          <span id="contestInfo"></span>
+          <a id="excelLink" href="#" class="hidden" download>Baixar Excel</a>
+        </div>
+        <p id="budgetInfo" class="subtitle"></p>
+
+        <h3 id="gamesTitle">Jogos gerados</h3>
+        <div id="gamesList" class="games"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

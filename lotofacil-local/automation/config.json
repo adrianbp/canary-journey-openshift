@@ -1,0 +1,11 @@
+{
+  "siteUrl": "https://www.loteriasonline.caixa.gov.br/",
+  "selectors": {
+    "clearSelection": "#limparvolante",
+    "addGame": "#colocarnocarrinho"
+  },
+  "numberSelector": "a.data-selecionar-numero-lotofacil",
+  "numberPattern": "^\\s*0?{n}\\s*$",
+  "delayBetweenNumbersMs": 180,
+  "delayAfterGameMs": 800
+}

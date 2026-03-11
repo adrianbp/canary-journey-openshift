@@ -1,0 +1,6 @@
+apiVersion: v2
+name: canary-addon
+description: Per-deployment canary add-on resources (primary/route-or-ingress/plan)
+type: application
+version: 0.1.0
+appVersion: 0.1.0

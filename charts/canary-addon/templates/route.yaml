@@ -1,0 +1,19 @@
+{{- if and .Values.canary.enabled (eq .Values.canary.provider "route") .Values.traffic.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Values.app.name }}
+  namespace: {{ .Values.app.namespace }}
+  labels:
+{{ include "canary-addon.labels" . | indent 4 }}
+spec:
+  host: {{ .Values.traffic.route.host | quote }}
+  to:
+    kind: Service
+    name: {{ .Values.primary.serviceName }}
+    weight: 100
+  alternateBackends:
+    - kind: Service
+      name: {{ .Values.app.name }}
+      weight: 0
+{{- end }}

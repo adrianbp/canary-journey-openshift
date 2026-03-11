@@ -1,0 +1,40 @@
+apiVersion: canary.company.io/v1alpha1
+kind: RouteRolloutPlan
+metadata:
+  name: payments-api-plan-stg
+spec:
+  appName: payments-api
+  stableDeployment: payments-api-primary
+  canaryDeployment: payments-api
+  stableService: payments-api-primary
+  canaryService: payments-api
+  routeName: payments-api
+  namespace: team-a
+  minCanaryReplicas: 1
+  safetyExtraReplicas: 1
+  steps:
+    - name: step-00-preview
+      canaryWeight: 0
+      stableWeight: 100
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-5
+      canaryWeight: 5
+      stableWeight: 95
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-20
+      canaryWeight: 20
+      stableWeight: 80
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-40
+      canaryWeight: 40
+      stableWeight: 60
+      canaryReplicas: auto
+      approvalRequired: true
+    - name: step-100-canary
+      canaryWeight: 100
+      stableWeight: 0
+      canaryReplicas: auto
+      approvalRequired: true

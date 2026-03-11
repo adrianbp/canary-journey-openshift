@@ -1,0 +1,4 @@
+meshProvider: nginx
+prometheus:
+  install: false
+  url: http://kube-prometheus-stack-prometheus.monitoring:9090

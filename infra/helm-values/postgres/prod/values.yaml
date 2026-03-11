@@ -1,0 +1,11 @@
+primary:
+  persistence:
+    enabled: true
+    size: 100Gi
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi

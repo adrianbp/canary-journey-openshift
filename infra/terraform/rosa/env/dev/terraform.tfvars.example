@@ -1,0 +1,17 @@
+aws_region           = "us-east-1"
+cluster_name         = "canary-rosa-dev"
+rosa_version         = "4.15.16"
+machine_cidr         = "10.60.0.0/16"
+private_subnet_cidrs = ["10.60.1.0/24", "10.60.2.0/24", "10.60.3.0/24"]
+public_subnet_cidrs  = ["10.60.101.0/24", "10.60.102.0/24", "10.60.103.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b", "us-east-1c"]
+compute_machine_type = "m5.xlarge"
+compute_nodes        = 3
+hosted_cp            = true
+create_account_roles = true
+create_oidc_config   = true
+
+tags = {
+  environment = "dev"
+  owner       = "platform-team"
+}

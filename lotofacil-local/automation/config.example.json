@@ -1,0 +1,10 @@
+{
+  "siteUrl": "https://www.loteriasonline.caixa.gov.br/",
+  "selectors": {
+    "clearSelection": "",
+    "addGame": ""
+  },
+  "numberPattern": "^0?{n}$",
+  "delayBetweenNumbersMs": 150,
+  "delayAfterGameMs": 600
+}
