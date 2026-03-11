@@ -1,13 +1,13 @@
-# Canary Platform Monorepo
+# Canary Journey OpenShift - PoC A
 
-This repository contains a Java/Spring Boot implementation scaffold for Flagger manual canary approvals on EKS.
+This branch contains only the assets required for PoC A:
+- OpenShift Route automation for canary rollout
+- Optional Dynatrace-assisted progressive rollout
+- Helm add-on chart for per-deployment canary objects
+- Architecture and notifications design docs
 
-## Modules
-- `services/shared-contracts`
-- `services/approval-api`
-- `services/manual-gate-webhook`
-- `charts/platform-canary-core`
-- `charts/canary-library`
-
-## Build
-`mvn -T 1C clean verify`
+## Main Paths
+- `infra/openshift/route-automation/`
+- `charts/canary-addon/`
+- `infra/helm-values/canary-addon/`
+- `docs/`

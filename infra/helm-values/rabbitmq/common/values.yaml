@@ -1,7 +1,0 @@
-auth:
-  username: canary
-  password: canarypass
-  erlangCookie: secretcookie
-
-metrics:
-  enabled: true

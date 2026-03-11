@@ -1,8 +1,0 @@
-primary:
-  persistence:
-    enabled: true
-    size: 20Gi
-  resources:
-    requests:
-      cpu: 300m
-      memory: 1Gi

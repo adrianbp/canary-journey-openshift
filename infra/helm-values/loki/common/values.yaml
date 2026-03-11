@@ -1,6 +1,0 @@
-grafana:
-  enabled: false
-promtail:
-  enabled: true
-loki:
-  isDefault: false

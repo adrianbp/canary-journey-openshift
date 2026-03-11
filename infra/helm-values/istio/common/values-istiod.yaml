@@ -1,6 +1,0 @@
-global:
-  proxy:
-    autoInject: enabled
-pilot:
-  autoscaleEnabled: true
-  autoscaleMin: 1

@@ -1,6 +1,0 @@
-apiVersion: v2
-name: canary-library
-description: Reusable Flagger canary templates for app teams
-type: application
-version: 0.1.0
-appVersion: 0.1.0

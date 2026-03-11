@@ -1,6 +1,0 @@
-auth:
-  username: canary
-  password: canarypass
-  database: canary_audit
-
-architecture: standalone
