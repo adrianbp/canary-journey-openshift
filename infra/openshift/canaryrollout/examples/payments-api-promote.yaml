@@ -8,6 +8,8 @@ spec:
     name: payments-api
     namespace: team-a
   action: PROMOTE
+  promotePolicy:
+    canaryBaselineReplicas: 0
   mode:
     type: DYNATRACE
     waitSeconds: 120

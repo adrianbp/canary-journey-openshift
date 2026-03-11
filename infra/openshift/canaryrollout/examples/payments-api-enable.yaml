@@ -12,6 +12,8 @@ spec:
     configMapName: payments-api-rollout-plan
     key: rollout-steps.yaml
   action: ENABLE
+  enablePolicy:
+    minCanaryReplicas: 1
   mode:
     type: MANUAL
     waitSeconds: 120

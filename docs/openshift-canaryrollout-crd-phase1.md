@@ -22,6 +22,8 @@ Main spec fields:
 - `spec.action`: `ENABLE|ADVANCE_STEP|PROMOTE|ROLLBACK|DISABLE`
 - `spec.stepName`: required for `ADVANCE_STEP`
 - `spec.mode`: `MANUAL|DYNATRACE`
+- `spec.enablePolicy`: enable-time knobs (`minCanaryReplicas`)
+- `spec.promotePolicy`: promote-time knobs (`canaryBaselineReplicas`)
 - `spec.approval`: gate state (`PENDING|APPROVED|REJECTED`)
 - `spec.request`: metadata (who/why/change/idempotency)
 - `spec.disablePolicy`: behavior for disable flow
@@ -96,5 +98,5 @@ Controller service account needs:
 - Action example manifests
 - architecture/state machine documentation
 
-Phase 2 MVP has started with a shell reconciler for `ENABLE` and `ADVANCE_STEP`:
+Phase 2 MVP has started with a shell reconciler for all actions (`ENABLE`, `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`, `DISABLE`):
 - `/Users/adrianobenignopavao/Documents/New project/infra/openshift/canaryrollout/controller/controller.sh`

@@ -3,8 +3,9 @@
 This MVP controller reconciles `CanaryRollout` actions:
 - `ENABLE`
 - `ADVANCE_STEP`
-
-Actions `PROMOTE`, `ROLLBACK`, and `DISABLE` are intentionally left for next increment.
+- `PROMOTE`
+- `ROLLBACK`
+- `DISABLE`
 
 ## How It Works
 - Polls `CanaryRollout` objects every `POLL_INTERVAL_SECONDS` (default `15`).
@@ -16,6 +17,9 @@ Actions `PROMOTE`, `ROLLBACK`, and `DISABLE` are intentionally left for next inc
 ## Script Mapping
 - `ENABLE` -> `bootstrap-primary.sh <namespace> <app> <min-canary-replicas>`
 - `ADVANCE_STEP` -> `apply-step.sh <tmp-plan-file> <step-name>` where plan is read from ConfigMap
+- `PROMOTE` -> `promote-to-primary.sh <namespace> <app> <canary-baseline-replicas>`
+- `ROLLBACK` -> `rollback.sh <tmp-plan-file>` where plan is read from ConfigMap
+- `DISABLE` -> `disable-canary.sh <namespace> <app> <delete-primary> <shift-step> <wait-seconds>`
 
 ## Prerequisites
 - `oc` logged in with permission to read/write the target namespace.
@@ -40,6 +44,17 @@ oc apply -f infra/openshift/canaryrollout/controller/rbac.yaml
 ```
 
 Update namespace/serviceaccount names in `rbac.yaml` per environment.
+
+## Deploy In-Cluster
+```bash
+oc apply -f infra/openshift/canaryrollout/controller/rbac.yaml
+oc apply -f infra/openshift/canaryrollout/controller/deployment.yaml
+```
+
+The image in `deployment.yaml` is a placeholder. Build an image that contains:
+- `infra/openshift/canaryrollout/controller/controller.sh`
+- `infra/openshift/route-automation/*.sh`
+- runtime dependencies: `bash`, `oc`, `jq`
 
 ## Notes
 - This MVP is shell-based and intended to validate reconciliation behavior quickly.

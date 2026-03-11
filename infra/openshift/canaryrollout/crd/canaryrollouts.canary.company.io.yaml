@@ -91,6 +91,20 @@ spec:
                       type: integer
                       minimum: 0
                       default: 120
+                enablePolicy:
+                  type: object
+                  properties:
+                    minCanaryReplicas:
+                      type: integer
+                      minimum: 0
+                      default: 1
+                promotePolicy:
+                  type: object
+                  properties:
+                    canaryBaselineReplicas:
+                      type: integer
+                      minimum: 0
+                      default: 0
                 disablePolicy:
                   type: object
                   properties:

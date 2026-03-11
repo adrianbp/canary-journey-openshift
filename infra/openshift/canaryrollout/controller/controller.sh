@@ -4,6 +4,12 @@ set -euo pipefail
 POLL_INTERVAL_SECONDS="${POLL_INTERVAL_SECONDS:-15}"
 WATCH_NAMESPACE="${WATCH_NAMESPACE:-}"
 DEFAULT_MIN_CANARY_REPLICAS="${DEFAULT_MIN_CANARY_REPLICAS:-1}"
+DEFAULT_PROMOTE_CANARY_BASELINE_REPLICAS="${DEFAULT_PROMOTE_CANARY_BASELINE_REPLICAS:-0}"
+DEFAULT_DISABLE_DELETE_PRIMARY="${DEFAULT_DISABLE_DELETE_PRIMARY:-true}"
+DEFAULT_DISABLE_SHIFT_STEP="${DEFAULT_DISABLE_SHIFT_STEP:-25}"
+DEFAULT_DISABLE_WAIT_SECONDS="${DEFAULT_DISABLE_WAIT_SECONDS:-20}"
+EVENTS_ENABLED="${EVENTS_ENABLED:-true}"
+MAX_STATUS_MESSAGE_LEN="${MAX_STATUS_MESSAGE_LEN:-700}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OPENSHIFT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -19,6 +25,54 @@ require_cmd() {
 require_cmd oc
 require_cmd jq
 require_cmd mktemp
+
+truncate_message() {
+  local msg="$1"
+  local max_len="$2"
+  if [[ ${#msg} -le $max_len ]]; then
+    echo "$msg"
+  else
+    echo "${msg:0:max_len}..."
+  fi
+}
+
+emit_event() {
+  local cr_ns="$1"
+  local cr_name="$2"
+  local event_type="$3"
+  local reason="$4"
+  local message="$5"
+
+  if [[ "$EVENTS_ENABLED" != "true" ]]; then
+    return 0
+  fi
+
+  local ts short_msg
+  ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  short_msg="$(truncate_message "$message" 250)"
+
+  oc -n "$cr_ns" create -f - >/dev/null 2>&1 <<YAML || true
+apiVersion: v1
+kind: Event
+metadata:
+  generateName: ${cr_name}-
+  namespace: ${cr_ns}
+involvedObject:
+  apiVersion: canary.company.io/v1alpha1
+  kind: CanaryRollout
+  name: ${cr_name}
+  namespace: ${cr_ns}
+type: ${event_type}
+reason: ${reason}
+message: |-
+  ${short_msg}
+firstTimestamp: ${ts}
+lastTimestamp: ${ts}
+count: 1
+source:
+  component: canaryrollout-controller
+YAML
+}
 
 get_rollouts_json() {
   if [[ -n "$WATCH_NAMESPACE" ]]; then
@@ -108,15 +162,16 @@ patch_status() {
   local condition_status="${13}"
   local condition_reason="${14}"
 
-  local timestamp payload
+  local timestamp payload msg
   timestamp="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  msg="$(truncate_message "$message" "$MAX_STATUS_MESSAGE_LEN")"
 
   payload="$(jq -n \
     --argjson observedGeneration "$observed_generation" \
     --arg phase "$phase" \
     --arg lastAction "$last_action" \
     --arg currentStep "$current_step" \
-    --arg message "$message" \
+    --arg message "$msg" \
     --argjson stableWeight "$stable_weight" \
     --argjson canaryWeight "$canary_weight" \
     --argjson stableReplicas "$stable_replicas" \
@@ -148,11 +203,127 @@ patch_status() {
             message: $message,
             lastTransitionTime: $transition
           }
+        ],
+        history: [
+          {
+            action: $lastAction,
+            stepName: $currentStep,
+            result: (if $conditionStatus == "True" then "Succeeded" else "Failed" end),
+            timestamp: $transition,
+            message: $message
+          }
         ]
       }
     }')"
 
   oc -n "$cr_ns" patch canaryrollout "$cr_name" --subresource=status --type=merge -p "$payload" >/dev/null
+}
+
+update_result() {
+  local cr_ns="$1"
+  local cr_name="$2"
+  local generation="$3"
+  local action="$4"
+  local step_name="$5"
+  local phase="$6"
+  local success="$7"
+  local reason="$8"
+  local message="$9"
+  local target_ns="${10}"
+  local app_name="${11}"
+  local route_name="${12}"
+
+  local stable_weight canary_weight stable_replicas canary_replicas cond_status event_type
+  read -r stable_weight canary_weight stable_replicas canary_replicas <<<"$(collect_runtime_status "$target_ns" "$app_name" "$route_name")"
+
+  if [[ "$success" == "true" ]]; then
+    cond_status="True"
+    event_type="Normal"
+  else
+    cond_status="False"
+    event_type="Warning"
+  fi
+
+  patch_status "$cr_ns" "$cr_name" "$generation" "$phase" "$action" "$step_name" "$message" \
+    "$stable_weight" "$canary_weight" "$stable_replicas" "$canary_replicas" "Ready" "$cond_status" "$reason"
+  emit_event "$cr_ns" "$cr_name" "$event_type" "$reason" "$message"
+}
+
+run_action() {
+  local action="$1"
+  local item="$2"
+  local target_ns="$3"
+  local app_name="$4"
+  local step_name="$5"
+
+  local tmp_plan_file enable_min_replicas promote_baseline disable_delete disable_shift disable_wait
+
+  case "$action" in
+    ENABLE)
+      enable_min_replicas="$(echo "$item" | jq -r '.spec.enablePolicy.minCanaryReplicas // empty')"
+      if [[ -z "$enable_min_replicas" || "$enable_min_replicas" == "null" ]]; then
+        enable_min_replicas="$DEFAULT_MIN_CANARY_REPLICAS"
+      fi
+      "$ROUTE_AUTOMATION_DIR/bootstrap-primary.sh" "$target_ns" "$app_name" "$enable_min_replicas"
+      ;;
+
+    ADVANCE_STEP)
+      if [[ -z "$step_name" ]]; then
+        echo "spec.stepName is required for ADVANCE_STEP"
+        return 1
+      fi
+      tmp_plan_file="$(mktemp)"
+      if ! get_plan_from_configmap "$target_ns" "$item" "$app_name" "$tmp_plan_file"; then
+        rm -f "$tmp_plan_file"
+        return 1
+      fi
+      "$ROUTE_AUTOMATION_DIR/apply-step.sh" "$tmp_plan_file" "$step_name"
+      rm -f "$tmp_plan_file"
+      ;;
+
+    PROMOTE)
+      promote_baseline="$(echo "$item" | jq -r '.spec.promotePolicy.canaryBaselineReplicas // empty')"
+      if [[ -z "$promote_baseline" || "$promote_baseline" == "null" ]]; then
+        promote_baseline="$DEFAULT_PROMOTE_CANARY_BASELINE_REPLICAS"
+      fi
+      "$ROUTE_AUTOMATION_DIR/promote-to-primary.sh" "$target_ns" "$app_name" "$promote_baseline"
+      ;;
+
+    ROLLBACK)
+      tmp_plan_file="$(mktemp)"
+      if ! get_plan_from_configmap "$target_ns" "$item" "$app_name" "$tmp_plan_file"; then
+        rm -f "$tmp_plan_file"
+        return 1
+      fi
+      "$ROUTE_AUTOMATION_DIR/rollback.sh" "$tmp_plan_file"
+      rm -f "$tmp_plan_file"
+      ;;
+
+    DISABLE)
+      disable_delete="$(echo "$item" | jq -r '.spec.disablePolicy.deletePrimary // empty')"
+      disable_shift="$(echo "$item" | jq -r '.spec.disablePolicy.shiftStep // empty')"
+      disable_wait="$(echo "$item" | jq -r '.spec.disablePolicy.waitSeconds // empty')"
+
+      if [[ -z "$disable_delete" || "$disable_delete" == "null" ]]; then
+        disable_delete="$DEFAULT_DISABLE_DELETE_PRIMARY"
+      fi
+      if [[ -z "$disable_shift" || "$disable_shift" == "null" ]]; then
+        disable_shift="$DEFAULT_DISABLE_SHIFT_STEP"
+      fi
+      if [[ -z "$disable_wait" || "$disable_wait" == "null" ]]; then
+        disable_wait="$DEFAULT_DISABLE_WAIT_SECONDS"
+      fi
+
+      "$ROUTE_AUTOMATION_DIR/disable-canary.sh" "$target_ns" "$app_name" "$disable_delete" "$disable_shift" "$disable_wait"
+      ;;
+
+    *)
+      echo "Action not implemented: $action"
+      return 1
+      ;;
+  esac
+
+  return 0
 }
 
 reconcile_item() {
@@ -176,16 +347,18 @@ reconcile_item() {
   suspended="$(echo "$item" | jq -r '.spec.suspend // false')"
 
   if [[ -z "$app_name" || -z "$target_ns" || -z "$action" ]]; then
-    echo "[$cr_ns/$cr_name] invalid spec, missing targetRef/action"
-    patch_status "$cr_ns" "$cr_name" "$observed_generation" "Failed" "$action" "$step_name" "Invalid spec: missing targetRef/action" 0 0 0 0 "Ready" "False" "InvalidSpec"
+    patch_status "$cr_ns" "$cr_name" "$observed_generation" "Failed" "$action" "$step_name" \
+      "Invalid spec: missing targetRef/action" 0 0 0 0 "Ready" "False" "InvalidSpec"
+    emit_event "$cr_ns" "$cr_name" "Warning" "InvalidSpec" "Invalid spec: missing targetRef/action"
     return
   fi
 
   route_name="$(get_route_name "$item" "$app_name")"
 
   if [[ "$suspended" == "true" ]]; then
-    echo "[$cr_ns/$cr_name] suspended=true, skipping"
-    patch_status "$cr_ns" "$cr_name" "$observed_generation" "Pending" "$action" "$step_name" "Reconciliation suspended by spec.suspend=true" 0 0 0 0 "Ready" "Unknown" "Suspended"
+    patch_status "$cr_ns" "$cr_name" "$observed_generation" "Pending" "$action" "$step_name" \
+      "Reconciliation suspended by spec.suspend=true" 0 0 0 0 "Ready" "Unknown" "Suspended"
+    emit_event "$cr_ns" "$cr_name" "Normal" "Suspended" "Reconciliation suspended by spec.suspend=true"
     return
   fi
 
@@ -194,55 +367,29 @@ reconcile_item() {
   fi
 
   if [[ "$approval_required" == "true" && "$approval_state" != "APPROVED" ]]; then
-    echo "[$cr_ns/$cr_name] waiting approval"
-    patch_status "$cr_ns" "$cr_name" "$observed_generation" "WaitingApproval" "$action" "$step_name" "Waiting for manual approval" 0 0 0 0 "Approved" "False" "ApprovalPending"
+    patch_status "$cr_ns" "$cr_name" "$observed_generation" "WaitingApproval" "$action" "$step_name" \
+      "Waiting for manual approval" 0 0 0 0 "Approved" "False" "ApprovalPending"
+    emit_event "$cr_ns" "$cr_name" "Normal" "ApprovalPending" "Waiting for manual approval"
     return
   fi
+
+  local output
 
   echo "[$cr_ns/$cr_name] reconciling action=$action app=$app_name ns=$target_ns"
+  emit_event "$cr_ns" "$cr_name" "Normal" "Reconciling" "Reconciling action=${action}"
 
-  local cmd_output tmp_plan_file stable_weight canary_weight stable_replicas canary_replicas
-  tmp_plan_file=""
-
-  if [[ "$action" == "ENABLE" ]]; then
-    if cmd_output="$($ROUTE_AUTOMATION_DIR/bootstrap-primary.sh "$target_ns" "$app_name" "$DEFAULT_MIN_CANARY_REPLICAS" 2>&1)"; then
-      read -r stable_weight canary_weight stable_replicas canary_replicas <<<"$(collect_runtime_status "$target_ns" "$app_name" "$route_name")"
-      patch_status "$cr_ns" "$cr_name" "$generation" "Succeeded" "$action" "" "Enable executed successfully" "$stable_weight" "$canary_weight" "$stable_replicas" "$canary_replicas" "Ready" "True" "EnableSucceeded"
-    else
-      patch_status "$cr_ns" "$cr_name" "$generation" "Failed" "$action" "" "$cmd_output" 0 0 0 0 "Ready" "False" "EnableFailed"
-    fi
-    return
+  if output="$(run_action "$action" "$item" "$target_ns" "$app_name" "$step_name" 2>&1)"; then
+    update_result "$cr_ns" "$cr_name" "$generation" "$action" "$step_name" "Succeeded" "${action}Succeeded" \
+      "Action ${action} executed successfully" "$target_ns" "$app_name" "$route_name"
+  else
+    output="$(truncate_message "$output" "$MAX_STATUS_MESSAGE_LEN")"
+    update_result "$cr_ns" "$cr_name" "$generation" "$action" "$step_name" "Failed" "${action}Failed" \
+      "$output" "$target_ns" "$app_name" "$route_name"
   fi
-
-  if [[ "$action" == "ADVANCE_STEP" ]]; then
-    if [[ -z "$step_name" ]]; then
-      patch_status "$cr_ns" "$cr_name" "$generation" "Failed" "$action" "$step_name" "spec.stepName is required for ADVANCE_STEP" 0 0 0 0 "Ready" "False" "InvalidStep"
-      return
-    fi
-
-    tmp_plan_file="$(mktemp)"
-    if ! get_plan_from_configmap "$target_ns" "$item" "$app_name" "$tmp_plan_file"; then
-      patch_status "$cr_ns" "$cr_name" "$generation" "Failed" "$action" "$step_name" "Could not load rollout plan from ConfigMap" 0 0 0 0 "Ready" "False" "PlanNotFound"
-      rm -f "$tmp_plan_file"
-      return
-    fi
-
-    if cmd_output="$($ROUTE_AUTOMATION_DIR/apply-step.sh "$tmp_plan_file" "$step_name" 2>&1)"; then
-      read -r stable_weight canary_weight stable_replicas canary_replicas <<<"$(collect_runtime_status "$target_ns" "$app_name" "$route_name")"
-      patch_status "$cr_ns" "$cr_name" "$generation" "Succeeded" "$action" "$step_name" "Step executed successfully" "$stable_weight" "$canary_weight" "$stable_replicas" "$canary_replicas" "Ready" "True" "AdvanceStepSucceeded"
-    else
-      patch_status "$cr_ns" "$cr_name" "$generation" "Failed" "$action" "$step_name" "$cmd_output" 0 0 0 0 "Ready" "False" "AdvanceStepFailed"
-    fi
-
-    rm -f "$tmp_plan_file"
-    return
-  fi
-
-  patch_status "$cr_ns" "$cr_name" "$generation" "Pending" "$action" "$step_name" "Action not implemented in Phase 2 MVP controller" 0 0 0 0 "Ready" "Unknown" "NotImplemented"
 }
 
 main_loop() {
-  echo "CanaryRollout MVP controller started (watch_namespace='${WATCH_NAMESPACE:-ALL}', poll=${POLL_INTERVAL_SECONDS}s)"
+  echo "CanaryRollout controller started (watch_namespace='${WATCH_NAMESPACE:-ALL}', poll=${POLL_INTERVAL_SECONDS}s)"
 
   while true; do
     rollouts_json="$(get_rollouts_json)"
