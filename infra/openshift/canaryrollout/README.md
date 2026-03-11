@@ -16,6 +16,8 @@ The controller/operator (next phase) will reconcile this object and execute the 
 - `crd/canaryrollouts.canary.company.io.yaml`: CRD definition (`v1alpha1`)
 - `examples/*.yaml`: sample resources for each action
 - `controller/controller.sh`: Phase 2 MVP reconciler (`ENABLE`, `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`, `DISABLE`)
+- `controller/Dockerfile`: container image definition for in-cluster execution
+- `controller/build-image.sh`: local helper to build image
 - `controller/rbac.yaml`: minimal RBAC for the controller
 - `controller/deployment.yaml`: sample in-cluster deployment
 - `controller/README.md`: operation guide for controller MVP

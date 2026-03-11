@@ -29,3 +29,4 @@ GitHub Actions workflow is included to enforce execution order:
 - Design doc: `docs/openshift-canaryrollout-crd-phase1.md`
 - Controller MVP (Phase 2): `infra/openshift/canaryrollout/controller/controller.sh`
 - Controller in-cluster manifest: `infra/openshift/canaryrollout/controller/deployment.yaml`
+- Controller image build workflow: `.github/workflows/build-canaryrollout-controller-image.yml`

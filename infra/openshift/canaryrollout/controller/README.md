@@ -51,10 +51,26 @@ oc apply -f infra/openshift/canaryrollout/controller/rbac.yaml
 oc apply -f infra/openshift/canaryrollout/controller/deployment.yaml
 ```
 
-The image in `deployment.yaml` is a placeholder. Build an image that contains:
-- `infra/openshift/canaryrollout/controller/controller.sh`
-- `infra/openshift/route-automation/*.sh`
-- runtime dependencies: `bash`, `oc`, `jq`
+## Build and Push Image (local)
+```bash
+export IMAGE_REPO=ghcr.io/<your-user>/canaryrollout-controller
+export IMAGE_TAG=0.1.0
+infra/openshift/canaryrollout/controller/build-image.sh
+docker push ${IMAGE_REPO}:${IMAGE_TAG}
+```
+
+Update `infra/openshift/canaryrollout/controller/deployment.yaml` with your image tag.
+
+## Build and Push Image (GitHub Actions)
+Workflow:
+- `.github/workflows/build-canaryrollout-controller-image.yml`
+
+Manual trigger options:
+- `image_tag`: target tag to publish to GHCR
+
+Default image target:
+- `ghcr.io/<repo-owner>/canaryrollout-controller:<tag>`
+- `ghcr.io/<repo-owner>/canaryrollout-controller:latest`
 
 ## Notes
 - This MVP is shell-based and intended to validate reconciliation behavior quickly.

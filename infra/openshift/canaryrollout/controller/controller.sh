@@ -13,7 +13,7 @@ MAX_STATUS_MESSAGE_LEN="${MAX_STATUS_MESSAGE_LEN:-700}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 OPENSHIFT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-ROUTE_AUTOMATION_DIR="$OPENSHIFT_DIR/route-automation"
+ROUTE_AUTOMATION_DIR="${ROUTE_AUTOMATION_DIR:-$OPENSHIFT_DIR/route-automation}"
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
