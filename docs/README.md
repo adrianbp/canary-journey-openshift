@@ -12,6 +12,8 @@ Ownership rule for PoC A:
   - `docs/quickstart-openshift-canaryrollout.md`
 - Runbook operacional simplificado:
   - `docs/RUNBOOK.md`
+- Playbook para desenvolvedores:
+  - `docs/PLAYBOOK-DEV.md`
 - Pipeline gates (GitHub Actions + Jenkins):
   - `docs/canaryrollout-pipeline-gates.md`
 - Plano de adoção para apresentação (DEV -> STG -> PRD):
