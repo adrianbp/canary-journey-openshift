@@ -1,0 +1,202 @@
+name: OpenShift Canary Orchestration
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Pipeline action"
+        type: choice
+        options:
+          - enable-and-rollout
+          - rollback
+          - disable
+        default: enable-and-rollout
+        required: true
+      app_name:
+        description: "Application name (deployment/service/route base name)"
+        required: true
+        default: payments-api
+      environment:
+        description: "Environment key used by rollout plan and Helm values"
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+        default: dev
+        required: true
+      namespace:
+        description: "OpenShift namespace"
+        required: true
+        default: team-a
+      run_dynatrace_gate:
+        description: "Use Dynatrace gate during progressive rollout"
+        type: boolean
+        default: false
+        required: true
+      rollout_steps:
+        description: "Space-separated steps (e.g. step-10 step-25 step-100-canary promote-primary)"
+        required: true
+        default: "step-10 step-25 step-100-canary promote-primary"
+      wait_seconds:
+        description: "Wait time between steps"
+        required: true
+        default: "120"
+      min_canary_replicas:
+        description: "Canary baseline replicas at enable"
+        required: true
+        default: "1"
+      disable_delete_primary:
+        description: "Delete <app>-primary on disable"
+        type: boolean
+        default: true
+        required: true
+      disable_shift_step:
+        description: "Disable traffic shift step (%)"
+        required: true
+        default: "25"
+      disable_wait_seconds:
+        description: "Disable wait between traffic shifts (seconds)"
+        required: true
+        default: "20"
+
+concurrency:
+  group: canary-${{ github.ref }}-${{ inputs.app_name }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: ${{ inputs.app_name }}
+      ENVIRONMENT: ${{ inputs.environment }}
+      NAMESPACE: ${{ inputs.namespace }}
+      ACTION: ${{ inputs.action }}
+      WAIT_SECONDS: ${{ inputs.wait_seconds }}
+      MIN_CANARY_REPLICAS: ${{ inputs.min_canary_replicas }}
+      DISABLE_DELETE_PRIMARY: ${{ inputs.disable_delete_primary }}
+      DISABLE_SHIFT_STEP: ${{ inputs.disable_shift_step }}
+      DISABLE_WAIT_SECONDS: ${{ inputs.disable_wait_seconds }}
+      RUN_DYNATRACE_GATE: ${{ inputs.run_dynatrace_gate }}
+      ROLLOUT_STEPS: ${{ inputs.rollout_steps }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: "latest"
+
+      - name: Login to OpenShift
+        shell: bash
+        env:
+          OPENSHIFT_API_URL: ${{ secrets.OPENSHIFT_API_URL }}
+          OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
+        run: |
+          set -euo pipefail
+          oc login "$OPENSHIFT_API_URL" --token="$OPENSHIFT_TOKEN" --insecure-skip-tls-verify=true
+          oc project "$NAMESPACE"
+
+      - name: Resolve plan/values paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          PLAN_FILE="infra/openshift/route-automation/plans/${APP_NAME}/${ENVIRONMENT}/rollout-steps.yaml"
+          VALUES_FILE="infra/helm-values/canary-addon/${APP_NAME}/${ENVIRONMENT}/values.yaml"
+
+          [[ -f "$PLAN_FILE" ]] || { echo "Plan file not found: $PLAN_FILE"; exit 1; }
+          [[ -f "$VALUES_FILE" ]] || { echo "Values file not found: $VALUES_FILE"; exit 1; }
+
+          echo "PLAN_FILE=$PLAN_FILE" >> "$GITHUB_ENV"
+          echo "VALUES_FILE=$VALUES_FILE" >> "$GITHUB_ENV"
+
+      - name: Validate rollout plan
+        if: ${{ inputs.action != 'disable' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          infra/openshift/route-automation/validate-plan.sh "$PLAN_FILE"
+
+      - name: Enable canary mode (script first)
+        if: ${{ inputs.action == 'enable-and-rollout' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          infra/openshift/route-automation/bootstrap-primary.sh "$NAMESPACE" "$APP_NAME" "$MIN_CANARY_REPLICAS"
+
+      - name: Apply Helm (canary mode enabled)
+        if: ${{ inputs.action == 'enable-and-rollout' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm upgrade --install "${APP_NAME}-canary-addon" charts/canary-addon \
+            -n "$NAMESPACE" \
+            -f "$VALUES_FILE" \
+            --set canary.enabled=true
+
+      - name: Progressive rollout with Dynatrace gate
+        if: ${{ inputs.action == 'enable-and-rollout' && inputs.run_dynatrace_gate == 'true' }}
+        shell: bash
+        env:
+          DYNATRACE_URL: ${{ secrets.DYNATRACE_URL }}
+          DYNATRACE_API_TOKEN: ${{ secrets.DYNATRACE_API_TOKEN }}
+          DYNATRACE_METRIC_SELECTOR: ${{ secrets.DYNATRACE_METRIC_SELECTOR }}
+          DYNATRACE_FROM: ${{ secrets.DYNATRACE_FROM }}
+          DYNATRACE_TO: ${{ secrets.DYNATRACE_TO }}
+          DYNATRACE_AGGREGATION: ${{ secrets.DYNATRACE_AGGREGATION }}
+          DYNATRACE_THRESHOLD: ${{ secrets.DYNATRACE_THRESHOLD }}
+          DYNATRACE_OPERATOR: ${{ secrets.DYNATRACE_OPERATOR }}
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2206
+          STEPS=( ${ROLLOUT_STEPS} )
+          infra/openshift/route-automation/progressive-rollout-dynatrace.sh "$PLAN_FILE" "$WAIT_SECONDS" "${STEPS[@]}"
+
+      - name: Progressive rollout without Dynatrace gate
+        if: ${{ inputs.action == 'enable-and-rollout' && inputs.run_dynatrace_gate != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2206
+          STEPS=( ${ROLLOUT_STEPS} )
+          for step in "${STEPS[@]}"; do
+            if [[ "$step" == "promote-primary" ]]; then
+              infra/openshift/route-automation/promote-to-primary.sh "$NAMESPACE" "$APP_NAME" 0
+            else
+              infra/openshift/route-automation/apply-step.sh "$PLAN_FILE" "$step"
+            fi
+            sleep "$WAIT_SECONDS"
+          done
+
+      - name: Rollback canary
+        if: ${{ inputs.action == 'rollback' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          infra/openshift/route-automation/rollback.sh "$PLAN_FILE"
+
+      - name: Disable canary mode (script first)
+        if: ${{ inputs.action == 'disable' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          infra/openshift/route-automation/disable-canary.sh \
+            "$NAMESPACE" \
+            "$APP_NAME" \
+            "$DISABLE_DELETE_PRIMARY" \
+            "$DISABLE_SHIFT_STEP" \
+            "$DISABLE_WAIT_SECONDS"
+
+      - name: Apply Helm (canary mode disabled)
+        if: ${{ inputs.action == 'disable' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          helm upgrade --install "${APP_NAME}-canary-addon" charts/canary-addon \
+            -n "$NAMESPACE" \
+            -f "$VALUES_FILE" \
+            --set canary.enabled=false
