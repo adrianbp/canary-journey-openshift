@@ -36,6 +36,7 @@ GitHub Actions workflow is included to enforce execution order:
 - Pipeline gates snippets: `docs/canaryrollout-pipeline-gates.md`
 - Adoption plan for Friday presentation: `docs/plano-adocao-canaryrollout-sexta.md`
 - Operator migration plan (OpenShift -> Kubernetes): `docs/plano-migracao-operator-openshift-k8s.md`
+- Crossplane distribution strategy: `docs/crossplane-distribuicao-canary-operator.md`
 - Decision log: `docs/DECISION-LOG.md`
 - Controller MVP (Phase 2): `infra/openshift/canaryrollout/controller/controller.sh`
 - Controller in-cluster manifest: `infra/openshift/canaryrollout/controller/deployment.yaml`

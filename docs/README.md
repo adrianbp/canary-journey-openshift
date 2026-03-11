@@ -22,6 +22,8 @@ Ownership rule for PoC A:
   - `docs/plano-adocao-canaryrollout-sexta.md`
 - Plano de migração para Operator (OpenShift -> Kubernetes):
   - `docs/plano-migracao-operator-openshift-k8s.md`
+- Estratégia com Crossplane para distribuição:
+  - `docs/crossplane-distribuicao-canary-operator.md`
 - Decision log (decisões fechadas e pendentes):
   - `docs/DECISION-LOG.md`
 - Notifications architecture (Slack/Teams):
