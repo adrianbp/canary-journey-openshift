@@ -1,0 +1,217 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: canaryrollouts.canary.company.io
+spec:
+  group: canary.company.io
+  scope: Namespaced
+  names:
+    plural: canaryrollouts
+    singular: canaryrollout
+    kind: CanaryRollout
+    shortNames:
+      - crout
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: App
+          type: string
+          jsonPath: .spec.targetRef.name
+        - name: Action
+          type: string
+          jsonPath: .spec.action
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Step
+          type: string
+          jsonPath: .status.currentStep
+        - name: Stable
+          type: integer
+          jsonPath: .status.traffic.stableWeight
+        - name: Canary
+          type: integer
+          jsonPath: .status.traffic.canaryWeight
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [targetRef, action]
+              properties:
+                targetRef:
+                  type: object
+                  required: [name, namespace]
+                  properties:
+                    name:
+                      type: string
+                      minLength: 1
+                      description: Base app name. Example: payments-api
+                    namespace:
+                      type: string
+                      minLength: 1
+                    routeName:
+                      type: string
+                      minLength: 1
+                      description: Optional, defaults to targetRef.name
+                planRef:
+                  type: object
+                  properties:
+                    configMapName:
+                      type: string
+                      minLength: 1
+                    key:
+                      type: string
+                      minLength: 1
+                      default: rollout-steps.yaml
+                action:
+                  type: string
+                  enum: [ENABLE, ADVANCE_STEP, PROMOTE, ROLLBACK, DISABLE]
+                stepName:
+                  type: string
+                  minLength: 1
+                  description: Required when action=ADVANCE_STEP
+                mode:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [MANUAL, DYNATRACE]
+                      default: MANUAL
+                    waitSeconds:
+                      type: integer
+                      minimum: 0
+                      default: 120
+                disablePolicy:
+                  type: object
+                  properties:
+                    deletePrimary:
+                      type: boolean
+                      default: true
+                    shiftStep:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 25
+                    waitSeconds:
+                      type: integer
+                      minimum: 0
+                      default: 20
+                approval:
+                  type: object
+                  properties:
+                    required:
+                      type: boolean
+                      default: true
+                    state:
+                      type: string
+                      enum: [PENDING, APPROVED, REJECTED]
+                      default: PENDING
+                    approvedBy:
+                      type: string
+                    approvedAt:
+                      type: string
+                      format: date-time
+                request:
+                  type: object
+                  properties:
+                    requestedBy:
+                      type: string
+                    changeTicket:
+                      type: string
+                    reason:
+                      type: string
+                    idempotencyKey:
+                      type: string
+                suspend:
+                  type: boolean
+                  default: false
+            status:
+              type: object
+              properties:
+                observedGeneration:
+                  type: integer
+                  format: int64
+                phase:
+                  type: string
+                  enum:
+                    - Pending
+                    - WaitingApproval
+                    - Reconciling
+                    - Progressing
+                    - Promoting
+                    - RollingBack
+                    - Disabled
+                    - Succeeded
+                    - Failed
+                currentStep:
+                  type: string
+                lastAction:
+                  type: string
+                message:
+                  type: string
+                traffic:
+                  type: object
+                  properties:
+                    stableWeight:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                    canaryWeight:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                replicas:
+                  type: object
+                  properties:
+                    stable:
+                      type: integer
+                      minimum: 0
+                    canary:
+                      type: integer
+                      minimum: 0
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    required: [type, status, reason, lastTransitionTime]
+                    properties:
+                      type:
+                        type: string
+                      status:
+                        type: string
+                        enum: ["True", "False", "Unknown"]
+                      reason:
+                        type: string
+                      message:
+                        type: string
+                      lastTransitionTime:
+                        type: string
+                        format: date-time
+                history:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: object
+                    properties:
+                      action:
+                        type: string
+                      stepName:
+                        type: string
+                      result:
+                        type: string
+                        enum: [Succeeded, Failed]
+                      timestamp:
+                        type: string
+                        format: date-time
+                      message:
+                        type: string

@@ -1,0 +1,23 @@
+apiVersion: canary.company.io/v1alpha1
+kind: CanaryRollout
+metadata:
+  name: payments-api
+  namespace: team-a
+spec:
+  targetRef:
+    name: payments-api
+    namespace: team-a
+  action: DISABLE
+  disablePolicy:
+    deletePrimary: true
+    shiftStep: 25
+    waitSeconds: 20
+  approval:
+    required: true
+    state: APPROVED
+    approvedBy: release-manager@company.com
+  request:
+    requestedBy: release-manager@company.com
+    changeTicket: CHG-1004
+    reason: "Disable canary mode and return to standard rollout"
+    idempotencyKey: "payments-api-disable-20260311"

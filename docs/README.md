@@ -6,5 +6,7 @@ Ownership rule for PoC A:
 
 - Unified OpenShift + Kubernetes architecture:
   - `/Users/adrianobenignopavao/Documents/New project/docs/canary-unified-architecture-openshift-k8s.md`
+- OpenShift CanaryRollout CRD phase 1:
+  - `/Users/adrianobenignopavao/Documents/New project/docs/openshift-canaryrollout-crd-phase1.md`
 - Notifications architecture (Slack/Teams):
   - `/Users/adrianobenignopavao/Documents/New project/docs/canary-notifications-architecture.md`

@@ -1,0 +1,22 @@
+apiVersion: canary.company.io/v1alpha1
+kind: CanaryRollout
+metadata:
+  name: payments-api
+  namespace: team-a
+spec:
+  targetRef:
+    name: payments-api
+    namespace: team-a
+  action: PROMOTE
+  mode:
+    type: DYNATRACE
+    waitSeconds: 120
+  approval:
+    required: true
+    state: APPROVED
+    approvedBy: release-manager@company.com
+  request:
+    requestedBy: release-manager@company.com
+    changeTicket: CHG-1003
+    reason: "Promote canary to stable after validation"
+    idempotencyKey: "payments-api-promote-20260311"

@@ -1,0 +1,26 @@
+apiVersion: canary.company.io/v1alpha1
+kind: CanaryRollout
+metadata:
+  name: payments-api
+  namespace: team-a
+spec:
+  targetRef:
+    name: payments-api
+    namespace: team-a
+    routeName: payments-api
+  planRef:
+    configMapName: payments-api-rollout-plan
+    key: rollout-steps.yaml
+  action: ENABLE
+  mode:
+    type: MANUAL
+    waitSeconds: 120
+  approval:
+    required: true
+    state: APPROVED
+    approvedBy: release-manager@company.com
+  request:
+    requestedBy: release-manager@company.com
+    changeTicket: CHG-1001
+    reason: "Enable canary mode for release 2026.03.11"
+    idempotencyKey: "payments-api-enable-20260311"

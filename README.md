@@ -8,6 +8,7 @@ This branch contains only the assets required for PoC A:
 
 ## Main Paths
 - `infra/openshift/route-automation/`
+- `infra/openshift/canaryrollout/`
 - `charts/canary-addon/`
 - `infra/helm-values/canary-addon/`
 - `docs/`
@@ -21,3 +22,8 @@ This branch contains only the assets required for PoC A:
 GitHub Actions workflow is included to enforce execution order:
 - Enable: `bootstrap-primary.sh` first, then `helm upgrade`.
 - Disable: `disable-canary.sh` first, then `helm upgrade --set canary.enabled=false`.
+
+## Canary CRD (Phase 1)
+- CRD: `infra/openshift/canaryrollout/crd/canaryrollouts.canary.company.io.yaml`
+- Examples: `infra/openshift/canaryrollout/examples/`
+- Design doc: `docs/openshift-canaryrollout-crd-phase1.md`

@@ -1,0 +1,23 @@
+apiVersion: canary.company.io/v1alpha1
+kind: CanaryRollout
+metadata:
+  name: payments-api
+  namespace: team-a
+spec:
+  targetRef:
+    name: payments-api
+    namespace: team-a
+  planRef:
+    configMapName: payments-api-rollout-plan
+  action: ROLLBACK
+  mode:
+    type: MANUAL
+  approval:
+    required: true
+    state: APPROVED
+    approvedBy: sre-oncall@company.com
+  request:
+    requestedBy: sre-oncall@company.com
+    changeTicket: INC-22031
+    reason: "Error rate increased above threshold"
+    idempotencyKey: "payments-api-rollback-20260311"
