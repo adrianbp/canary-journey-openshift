@@ -1,4 +1,4 @@
-# CanaryRollout CRD (Phase 1)
+# CanaryRollout CRD + Controller (Phase 1 + Phase 2 MVP)
 
 This folder adds a Flagger-like declarative contract for OpenShift Route canary operations.
 
@@ -10,7 +10,7 @@ Provide one CRD object to describe the action to execute:
 - `ROLLBACK`
 - `DISABLE`
 
-The controller/operator (next phase) will reconcile this object and execute the existing route automation scripts.
+The controller MVP in this branch already reconciles this object and executes the existing route automation scripts.
 
 ## Files
 - `crd/canaryrollouts.canary.company.io.yaml`: CRD definition (`v1alpha1`)
@@ -54,3 +54,4 @@ oc get canaryrollout payments-api -n team-a -o yaml
 - CRD/controller must keep idempotency via `spec.request.idempotencyKey`.
 - Manual gates should set `spec.approval.state=APPROVED` before reconciliation executes state-changing actions.
 - Phase 2 MVP controller emits OpenShift `Event` objects for audit visibility.
+- End-to-end validation guide: `docs/quickstart-openshift-canaryrollout.md`.

@@ -3,6 +3,10 @@
 ## Objective
 Provide Flagger-like alerts and notifications for OpenShift/Kubernetes canary flows (manual + automated), including approvals, rollout progression, failures, rollback, and promotion.
 
+## Status in This Branch
+- Implemented now: OpenShift `Event` emission from CanaryRollout controller for audit visibility.
+- Planned next: external notification pipeline (`approval-api`/event bus/notification-worker) for Slack and Teams.
+
 ## Scope
 - Works with Route automation and Dynatrace metric gates.
 - Works with per-deployment rollout plans.

@@ -4,6 +4,7 @@ This folder stores per-deployment canary settings for the `charts/canary-addon` 
 No global traffic weights are used.
 In PoC A, these values only reference stable names (`stable.deploymentName`, `stable.serviceName`);
 the chart does not create/manage `<app>-primary`.
+These values also provide the rollout plan consumed by the CanaryRollout controller via ConfigMap.
 
 Example install for one deployment:
 

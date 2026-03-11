@@ -13,6 +13,7 @@ This MVP controller reconciles `CanaryRollout` actions:
 - Executes route automation scripts from `infra/openshift/route-automation`.
 - Patches `status` with phase/traffic/replicas/conditions.
 - Uses `status.observedGeneration` for idempotent reconciliation by generation.
+- Emits OpenShift `Event` objects for reconciliation/audit visibility.
 
 ## Script Mapping
 - `ENABLE` -> `bootstrap-primary.sh <namespace> <app> <min-canary-replicas>`
@@ -34,6 +35,7 @@ This MVP controller reconciles `CanaryRollout` actions:
 export WATCH_NAMESPACE=team-a
 export POLL_INTERVAL_SECONDS=15
 export DEFAULT_MIN_CANARY_REPLICAS=1
+export EVENTS_ENABLED=true
 
 infra/openshift/canaryrollout/controller/controller.sh
 ```
@@ -75,3 +77,4 @@ Default image target:
 ## Notes
 - This MVP is shell-based and intended to validate reconciliation behavior quickly.
 - For production, replace with a proper Operator/Controller runtime (Go + controller-runtime) and leader election.
+- Use `docs/quickstart-openshift-canaryrollout.md` for full end-to-end validation flow.

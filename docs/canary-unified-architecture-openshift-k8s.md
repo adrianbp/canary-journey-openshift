@@ -11,6 +11,16 @@ while keeping:
 - optional Dynatrace-based automatic progression
 - Flagger-like promotion behavior with `-primary`
 
+## Implementation Status (This Branch)
+Implemented:
+- OpenShift Route automation scripts (`infra/openshift/route-automation`)
+- CanaryRollout CRD + controller MVP (`infra/openshift/canaryrollout`)
+- GitHub Actions workflows for orchestration and controller image build
+
+Planned/target:
+- Dedicated approval API and notification worker as independent services
+- Multi-cluster rollout executor abstraction
+
 ## Core Principle
 Keep one **control flow** and swap only the **traffic adapter**:
 - OpenShift adapter -> Route weights
@@ -21,6 +31,7 @@ For PoC A ownership:
 - Rollout scripts/executor own `<app>-primary` create/update/remove lifecycle.
 
 ## Unified Component Model
+Target reference model:
 ```mermaid
 flowchart LR
   UI["Developer Portal"] --> API["approval-api"]

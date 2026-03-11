@@ -4,7 +4,8 @@ This branch contains only the assets required for PoC A:
 - OpenShift Route automation for canary rollout
 - Optional Dynatrace-assisted progressive rollout
 - Helm add-on chart for per-deployment canary config (no `-primary` object management)
-- Architecture and notifications design docs
+- CanaryRollout CRD + controller MVP
+- Architecture, notifications, and quickstart docs
 
 ## Main Paths
 - `infra/openshift/route-automation/`
@@ -22,8 +23,9 @@ This branch contains only the assets required for PoC A:
 GitHub Actions workflow is included to enforce execution order:
 - Enable: `bootstrap-primary.sh` first, then `helm upgrade`.
 - Disable: `disable-canary.sh` first, then `helm upgrade --set canary.enabled=false`.
+- Controller image build/push: `.github/workflows/build-canaryrollout-controller-image.yml`.
 
-## Canary CRD (Phase 1)
+## Canary CRD + Controller (Phase 1 + Phase 2 MVP)
 - CRD: `infra/openshift/canaryrollout/crd/canaryrollouts.canary.company.io.yaml`
 - Examples: `infra/openshift/canaryrollout/examples/`
 - Design doc: `docs/openshift-canaryrollout-crd-phase1.md`

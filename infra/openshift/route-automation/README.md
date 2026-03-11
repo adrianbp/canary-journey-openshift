@@ -19,6 +19,7 @@ The script supports dynamic replica calculation from the current stable deployme
 ## Ownership Model
 - Helm: must not create/manage `<app>-primary` deployment/service for this PoC.
 - `oc` scripts in this folder: own `-primary` bootstrap, promotion sync, rollback, disable, and route weight changes.
+- CanaryRollout controller consumes these scripts as execution backend for CR actions.
 
 ## Files
 - `plans/<app>/<env>/rollout-steps.yaml`: per-deployment per-environment rollout plans

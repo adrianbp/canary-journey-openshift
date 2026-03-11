@@ -5,10 +5,10 @@ Ownership rule for PoC A:
 - OpenShift automation scripts (`infra/openshift/route-automation`) own `<app>-primary` lifecycle and traffic operations.
 
 - Unified OpenShift + Kubernetes architecture:
-  - `/Users/adrianobenignopavao/Documents/New project/docs/canary-unified-architecture-openshift-k8s.md`
-- OpenShift CanaryRollout CRD phase 1:
-  - `/Users/adrianobenignopavao/Documents/New project/docs/openshift-canaryrollout-crd-phase1.md`
+  - `docs/canary-unified-architecture-openshift-k8s.md`
+- OpenShift CanaryRollout CRD design (Phase 1, with Phase 2 MVP status):
+  - `docs/openshift-canaryrollout-crd-phase1.md`
 - Quickstart OpenShift CanaryRollout (E2E):
-  - `/Users/adrianobenignopavao/Documents/New project/docs/quickstart-openshift-canaryrollout.md`
+  - `docs/quickstart-openshift-canaryrollout.md`
 - Notifications architecture (Slack/Teams):
-  - `/Users/adrianobenignopavao/Documents/New project/docs/canary-notifications-architecture.md`
+  - `docs/canary-notifications-architecture.md`

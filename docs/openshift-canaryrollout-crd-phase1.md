@@ -1,7 +1,11 @@
-# OpenShift CanaryRollout CRD - Phase 1 Design
+# OpenShift CanaryRollout CRD - Phase 1 Design (with Phase 2 MVP Status)
 
 ## Scope
 Phase 1 introduces a declarative control object for OpenShift canary orchestration, similar to Flagger behavior but keeping `Deployment` + `Route` and existing `oc` automation scripts.
+
+Current branch status:
+- Phase 1 delivered: CRD + examples + design.
+- Phase 2 MVP delivered: shell controller, RBAC, deployment manifest, image packaging workflow.
 
 ## Why
 Current flow works through pipeline inputs/scripts. The CRD adds:
@@ -36,7 +40,7 @@ Main status fields:
 - `status.conditions[]`
 - `status.history[]`
 
-## Reconciliation Model (Phase 2 target)
+## Reconciliation Model
 Controller watches `CanaryRollout` changes and performs:
 1. Validate object and action preconditions.
 2. Check manual gate (`spec.approval.state`).
@@ -99,4 +103,4 @@ Controller service account needs:
 - architecture/state machine documentation
 
 Phase 2 MVP has started with a shell reconciler for all actions (`ENABLE`, `ADVANCE_STEP`, `PROMOTE`, `ROLLBACK`, `DISABLE`):
-- `/Users/adrianobenignopavao/Documents/New project/infra/openshift/canaryrollout/controller/controller.sh`
+- `infra/openshift/canaryrollout/controller/controller.sh`
