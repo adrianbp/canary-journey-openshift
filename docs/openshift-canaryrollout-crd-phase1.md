@@ -96,4 +96,5 @@ Controller service account needs:
 - Action example manifests
 - architecture/state machine documentation
 
-Phase 2 will implement the actual controller/operator runtime.
+Phase 2 MVP has started with a shell reconciler for `ENABLE` and `ADVANCE_STEP`:
+- `/Users/adrianobenignopavao/Documents/New project/infra/openshift/canaryrollout/controller/controller.sh`

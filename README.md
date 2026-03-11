@@ -27,3 +27,4 @@ GitHub Actions workflow is included to enforce execution order:
 - CRD: `infra/openshift/canaryrollout/crd/canaryrollouts.canary.company.io.yaml`
 - Examples: `infra/openshift/canaryrollout/examples/`
 - Design doc: `docs/openshift-canaryrollout-crd-phase1.md`
+- Controller MVP (Phase 2 start): `infra/openshift/canaryrollout/controller/controller.sh`
