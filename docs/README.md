@@ -18,5 +18,7 @@ Ownership rule for PoC A:
   - `docs/canaryrollout-pipeline-gates.md`
 - Plano de adoção para apresentação (DEV -> STG -> PRD):
   - `docs/plano-adocao-canaryrollout-sexta.md`
+- Decision log (decisões fechadas e pendentes):
+  - `docs/DECISION-LOG.md`
 - Notifications architecture (Slack/Teams):
   - `docs/canary-notifications-architecture.md`
