@@ -26,6 +26,7 @@ GitHub Actions workflow is included to enforce execution order:
 - Controller image build/push: `.github/workflows/build-canaryrollout-controller-image.yml`.
 
 ## Canary CRD + Controller (Phase 1 + Phase 2 MVP)
+- Target architecture diagram: `docs/arquitetura-solucao-alvo.md`
 - CRD: `infra/openshift/canaryrollout/crd/canaryrollouts.canary.company.io.yaml`
 - Examples: `infra/openshift/canaryrollout/examples/`
 - Design doc: `docs/openshift-canaryrollout-crd-phase1.md`

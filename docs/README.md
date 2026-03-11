@@ -6,6 +6,8 @@ Ownership rule for PoC A:
 
 - Unified OpenShift + Kubernetes architecture:
   - `docs/canary-unified-architecture-openshift-k8s.md`
+- Arquitetura alvo (Operator + CR via Helm + Governança):
+  - `docs/arquitetura-solucao-alvo.md`
 - OpenShift CanaryRollout CRD design (Phase 1, with Phase 2 MVP status):
   - `docs/openshift-canaryrollout-crd-phase1.md`
 - Quickstart OpenShift CanaryRollout (E2E):
