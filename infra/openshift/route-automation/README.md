@@ -60,7 +60,7 @@ cd infra/openshift/route-automation
 # Apply 50%
 ./run-step.sh payments-api dev step-50
 
-# Temporarily route 100% to canary
+# Optional: temporarily route 100% to canary for office preview
 ./run-step.sh payments-api dev step-100-canary
 
 # Finalize promotion like Flagger (sync to -primary, route 100% to primary, and scale canary to 0)
@@ -94,7 +94,7 @@ set +a
 
 4. Run progressive rollout with automatic rollback:
 ```bash
-./run-progressive.sh payments-api dev 120 step-10 step-25 step-50 step-100-canary promote-primary
+./run-progressive.sh payments-api dev 120 step-10 step-25 step-50 promote-primary
 ```
 
 Behavior:
@@ -113,8 +113,9 @@ Disable behavior:
 - Finalizes route with `<app>=100%` and clears alternate backends.
 - Optionally removes `<app>-primary` deployment/service (or scales it to zero if keep mode).
 
-Promotion behavior (Flagger-like):
-- Route canary temporarily to 100% (`step-100-canary`).
+Promotion behavior (Flagger-inspired):
+- Promotion can start from the current max canary weight (no mandatory 100% canary).
+- Optional: use `step-100-canary` only when full canary preview is explicitly desired.
 - Sync canary deployment spec to `<app>-primary`.
 - Wait `<app>-primary` healthy.
 - Route traffic back to `<app>-primary` 100%.

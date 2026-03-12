@@ -9,7 +9,7 @@ STEPS=("$@")
 
 if [[ -z "$APP_NAME" || -z "$ENVIRONMENT" ]]; then
   echo "Usage: $0 <app-name> <dev|stg|prod> [wait-seconds] <steps...>"
-  echo "Example: $0 payments-api dev 120 step-10 step-25 step-50 step-100-canary promote-primary"
+  echo "Example: $0 payments-api dev 120 step-10 step-25 step-50 promote-primary"
   exit 1
 fi
 

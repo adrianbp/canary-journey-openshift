@@ -33,7 +33,7 @@ Até essa decisão, este playbook cobre principalmente:
   - `infra/helm-values/canary-addon/<app>/<env>/values.yaml`
 
 ## Checklist de PR (dev)
-- Steps existem e estão em ordem (ex.: `step-10`, `step-25`, `step-50`, `step-100-canary`).
+- Steps existem e estão em ordem (ex.: `step-10`, `step-25`, `step-50`; `step-100-canary` é opcional).
 - Pesos por step somam 100 (`stableWeight + canaryWeight`).
 - `canaryReplicas` consistente (`auto` ou número válido).
 - `minCanaryReplicas` e `safetyExtraReplicas` condizem com risco do serviço.

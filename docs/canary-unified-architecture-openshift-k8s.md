@@ -81,7 +81,7 @@ flowchart TD
 - Optional Dynatrace gate before step.
 
 3. **Promotion (two-phase)**
-- Temporary 100% to canary.
+- Keep traffic at current max canary weight (100% canary is optional for explicit preview only).
 - Sync canary spec to `<app>-primary`.
 - Route back 100% to `<app>-primary`.
 - Scale canary to `0`.
@@ -115,7 +115,7 @@ sequenceDiagram
 
   Portal->>API: Approve promotion
   API-->>Exec: promotion approved event
-  Exec->>Adapter: Set 100% canary (temporary)
+  Note over Exec,Adapter: Optional preview-only step: 100% canary
   Exec->>Exec: Sync canary spec -> primary
   Exec->>Adapter: Set 100% primary
   Exec->>Exec: Scale canary to 0
