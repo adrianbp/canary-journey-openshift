@@ -60,6 +60,7 @@ infra/eks/flagger-nginx-validation/validate-flagger-with-f5.sh
 
 ## Evidências A/B
 - Relatório consolidado: `infra/eks/flagger-nginx-validation/evidence/AB-EVIDENCE-2026-03-16.md`
+- Gateway API + Flagger: `infra/eks/flagger-nginx-validation/evidence/GATEWAY-API-EVIDENCE-2026-03-16.md`
 
 ## Limpeza
 ```bash
