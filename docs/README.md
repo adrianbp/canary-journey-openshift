@@ -38,6 +38,8 @@ Status mapping:
   - `/Users/adrianobenignopavao/Documents/New project/docs/canary-notifications-architecture.md`
 - Unified OpenShift + Kubernetes architecture (Route/Ingress adapter):
   - `/Users/adrianobenignopavao/Documents/New project/docs/canary-unified-architecture-openshift-k8s.md`
+- Istio-first multi-cluster blueprint with custom CRD fallback:
+  - `/Users/adrianobenignopavao/Documents/New project/docs/blueprint-istio-flagger-crd-fallback.md`
 
 ## Release Management Modes
 - Pause Flagger reconciliation (temporary freeze):
